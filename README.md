@@ -436,10 +436,6 @@ La documentación de DBT incluye:
 - Tests ejecutados
 - Metadata de ejecuciones
 
-### Data Lineage
-
-Ver archivo detallado: [DATA_LINEAGE.md](./DATA_LINEAGE.md)
-
 Flujo de datos resumido:
 
 ```
@@ -544,17 +540,5 @@ techstore/
 - **MoM Growth**: Month-over-Month growth percentage
 - **Order Volume**: Cantidad de órdenes
 - **Customer Count**: Clientes únicos
-
-## Próximos Pasos
-
-- [ ] Implementar caching en API (Redis)
-- [ ] Añadir autenticación (OAuth2/JWT)
-- [ ] Rate limiting en endpoints
-- [ ] Tests automatizados (pytest + dbt test)
-- [ ] CI/CD pipeline (GitHub Actions)
-- [ ] Dashboards con BI tool (Metabase, Superset, Tableau)
-- [ ] Alertas automáticas (low stock, sales anomalies)
-- [ ] Data quality checks (Great Expectations)
-- [ ] 
 
 ---
