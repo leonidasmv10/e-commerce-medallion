@@ -40,14 +40,13 @@ No rate limiting currently applied. Use responsibly.
 
 ### Recursos Adicionales
 
-- [Documentación completa](https://github.com/yourorg/techstore-analytics)
-- [Data Lineage](./DATA_LINEAGE.md)
+- [Documentación completa](https://github.com/leonidasmv10/techstore)
 - [DBT Docs](http://localhost:8080) (run `dbt docs serve`)
     """,
     version="1.0.0",
     contact={
-        "name": "Plenimo Data Team",
-        "email": "data@plenimo.com",
+        "name": "Leonidas",
+        "email": "yordy.lmv.2000@gmail.com",
     },
     license_info={
         "name": "Proprietary",

@@ -215,8 +215,6 @@ EOF
 
 # Ejecutar servidor
 python -m app.main
-# O con uvicorn directamente:
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### 3. Verificación
