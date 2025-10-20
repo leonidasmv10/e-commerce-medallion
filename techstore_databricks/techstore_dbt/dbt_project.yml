@@ -1,0 +1,37 @@
+name: 'techstore_analytics'
+version: '1.0.0'
+config-version: 2
+
+profile: 'techstore_dbt'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  techstore_analytics:
+    bronze:
+      +materialized: table
+      +file_format: delta
+      +tags: ['bronze', 'raw']
+    silver:
+      +materialized: table
+      +file_format: delta
+      +tags: ['silver', 'clean']
+    gold:
+      +materialized: table
+      +file_format: delta
+      +tags: ['gold', 'metrics']
+
+vars:
+  start_date: '2023-01-01'
+  tax_rate: 0.21
+  free_shipping_threshold: 100

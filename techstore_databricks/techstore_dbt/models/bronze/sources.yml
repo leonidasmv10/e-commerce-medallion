@@ -1,0 +1,19 @@
+version: 2
+
+sources:
+  - name: techstore
+    description: Raw transactional tables from TechStore
+    schema: techstore
+    tables:
+      - name: customers
+        description: Customer master data
+      - name: products
+        description: Product catalog
+      - name: orders
+        description: Order transactions
+      - name: order_items
+        description: Order line items
+      - name: reviews
+        description: Product reviews and ratings
+      - name: product_categories
+        description: Product category hierarchy

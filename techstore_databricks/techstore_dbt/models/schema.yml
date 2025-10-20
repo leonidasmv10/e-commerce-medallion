@@ -1,0 +1,262 @@
+version: 2
+
+models:
+  # ==================== BRONZE LAYER ====================
+  - name: bronze_customers
+    description: |
+      Raw customer data ingested from techstore.customers source.
+
+      This is a 1:1 copy with minimal transformations, preserving original data
+      and adding ingestion metadata for lineage tracking.
+    columns:
+      - name: id
+        description: Unique customer identifier (primary key)
+        tests:
+          - unique
+          - not_null
+      - name: name
+        description: Customer full name
+      - name: email
+        description: Customer email address
+      - name: registration_date
+        description: Date when customer registered
+      - name: birth_date
+        description: Customer date of birth
+      - name: phone
+        description: Customer phone number
+      - name: city
+        description: Customer city
+      - name: country
+        description: Customer country
+      - name: is_active
+        description: Whether customer account is active
+      - name: _ingested_at
+        description: Timestamp when data was ingested to bronze layer
+      - name: _source_table
+        description: Source table name for lineage tracking
+
+  - name: bronze_products
+    description: Raw product catalog from techstore.products
+    columns:
+      - name: id
+        description: Unique product identifier
+        tests:
+          - unique
+          - not_null
+
+  - name: bronze_orders
+    description: Raw order transactions from techstore.orders
+    columns:
+      - name: id
+        description: Unique order identifier
+        tests:
+          - unique
+          - not_null
+
+  - name: bronze_order_items
+    description: Raw order line items from techstore.order_items
+
+  - name: bronze_reviews
+    description: Raw product reviews from techstore.reviews
+
+  - name: bronze_product_categories
+    description: Raw product category hierarchy from techstore.product_categories
+
+  # ==================== SILVER LAYER ====================
+  - name: silver_customers
+    description: |
+      Cleaned and enriched customer data.
+
+      Transformations applied:
+      - Name normalization (INITCAP)
+      - Email standardization (lowercase)
+      - Country code standardization (uppercase)
+      - Age calculations
+      - Customer tenure derivation
+      - Lifetime stage classification
+      - Age group binning
+
+      Quality checks:
+      - Filters out records with missing critical fields (email, name)
+      - Validates date logic
+    columns:
+      - name: id
+        description: Customer ID (primary key)
+        tests:
+          - unique
+          - not_null
+      - name: name
+        description: Normalized customer name (Title Case)
+      - name: email
+        description: Standardized email (lowercase)
+        tests:
+          - not_null
+      - name: age_at_registration
+        description: Calculated age when customer registered
+      - name: customer_tenure_days
+        description: Days since registration
+      - name: customer_lifetime_stage
+        description: |
+          Customer lifecycle stage based on tenure:
+          - New: < 30 days
+          - Recent: 30-180 days
+          - Regular: 180-365 days
+          - Veteran: > 365 days
+      - name: age_group
+        description: |
+          Demographic age group:
+          18-24, 25-34, 35-44, 45-54, 55-64, 65+
+      - name: _processed_at
+        description: Timestamp when silver processing occurred
+
+  - name: silver_products
+    description: Cleaned product catalog with enrichments
+
+  - name: silver_orders
+    description: |
+      Cleaned order data with derived fields.
+
+      Enrichments include:
+      - Day of week analysis
+      - Weekend flag
+      - Order hour extraction
+      - Processing time calculations
+
+  - name: silver_order_items
+    description: Cleaned order line items with product joins
+
+  - name: silver_reviews
+    description: Cleaned product reviews with validation
+
+  # ==================== GOLD LAYER ====================
+  - name: gold_customer_analytics
+    description: |
+      Comprehensive customer analytics model with RFM segmentation and CLV.
+
+      **RFM Analysis:**
+      - Recency: Days since last order
+      - Frequency: Total number of orders
+      - Monetary: Total revenue generated
+      - Scores: 1-5 scale for each dimension
+
+      **Customer Segments:**
+      - VIP: High R/F/M scores (premium customers)
+      - Loyal: Consistently good behavior
+      - New: Recent first purchase
+      - At Risk: Haven't purchased recently but have history
+      - Lost: Low recency and frequency
+      - Regular: Moderate behavior
+
+      **CLV Calculation:**
+      CLV = (Average Order Value × Total Orders) - Acquisition Cost (assumed $50)
+
+      **Use Cases:**
+      - Customer segmentation for marketing campaigns
+      - Identifying high-value customers
+      - Churn prediction and retention strategies
+      - Personalization targeting
+    columns:
+      - name: customer_id
+        description: Customer unique identifier
+        tests:
+          - unique
+          - not_null
+      - name: customer_segment
+        description: RFM-based segment (VIP, Loyal, New, At Risk, Lost, Regular)
+      - name: customer_lifetime_value
+        description: Estimated CLV in dollars
+      - name: r_score
+        description: Recency score (1-5, higher is better)
+      - name: f_score
+        description: Frequency score (1-5, higher is better)
+      - name: m_score
+        description: Monetary score (1-5, higher is better)
+      - name: rfm_score
+        description: Concatenated RFM score (e.g., "555" for best customers)
+      - name: total_orders
+        description: Lifetime order count
+      - name: total_revenue
+        description: Lifetime revenue generated
+      - name: avg_order_value
+        description: Average order value (AOV)
+
+  - name: gold_product_performance
+    description: |
+      Product performance analytics with sales, inventory, and quality metrics.
+
+      **Performance Classification:**
+      - Best Seller: Top revenue generators
+      - Good: Solid performance
+      - Moderate: Average performance
+      - Poor: Low sales
+
+      **Stock Levels:**
+      - Out of Stock: 0 units
+      - Critical: < 10 units
+      - Low: 10-50 units
+      - Normal: 50-200 units
+      - Overstock: > 200 units
+
+      **Product Health Score:**
+      Composite metric combining sales performance, ratings, and inventory health
+
+      **Use Cases:**
+      - Inventory management and reordering
+      - Product discontinuation decisions
+      - Pricing optimization
+      - Marketing focus prioritization
+    columns:
+      - name: product_id
+        description: Product unique identifier
+      - name: sales_performance
+        description: Performance category (Best Seller, Good, Moderate, Poor)
+      - name: product_health_score
+        description: Composite health metric (0-10)
+      - name: total_units_sold
+        description: Lifetime units sold
+      - name: total_revenue
+        description: Lifetime revenue
+      - name: total_profit
+        description: Lifetime profit
+      - name: avg_rating
+        description: Average customer rating (1-5)
+
+  - name: gold_sales_metrics
+    description: |
+      Daily and monthly sales metrics with growth calculations.
+
+      **Daily Metrics:**
+      - Daily revenue, orders, customers
+      - Average Order Value (AOV)
+      - Day of week patterns
+      - Weekend vs weekday analysis
+
+      **Monthly Metrics:**
+      - Monthly revenue, orders, customers
+      - Month-over-Month (MoM) growth percentage
+      - Trend identification
+
+      **Use Cases:**
+      - Executive dashboards
+      - Sales forecasting
+      - Seasonality analysis
+      - Performance tracking against targets
+    columns:
+      - name: sale_date
+        description: Date dimension
+      - name: daily_revenue
+        description: Total revenue for the day
+      - name: daily_orders
+        description: Number of orders
+      - name: daily_aov
+        description: Average order value
+      - name: monthly_revenue
+        description: Monthly aggregated revenue
+      - name: mom_revenue_growth_percent
+        description: Month-over-month revenue growth percentage
+
+  - name: gold_operational_metrics
+    description: |
+      Operational KPIs for business monitoring.
+
+      Cross-functional metrics for operations, inventory, and customer service.
