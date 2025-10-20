@@ -159,12 +159,12 @@ techstore_dbt:
   outputs:
     dev:
       type: databricks
-      host: <YOUR_DATABRICKS_HOST>
-      http_path: <YOUR_SQL_WAREHOUSE_HTTP_PATH>
-      token: <YOUR_DATABRICKS_TOKEN>
-      schema: techstore
-      threads: 4
       catalog: workspace
+      schema: techstore
+      host: "{{ env_var('DBT_DATABRICKS_HOST') }}"
+      http_path: "{{ env_var('DBT_DATABRICKS_HTTP_PATH') }}"
+      token: "{{ env_var('DBT_DATABRICKS_TOKEN') }}"
+      threads: 4
 ```
 
 **Variables de entorno (alternativa):**
